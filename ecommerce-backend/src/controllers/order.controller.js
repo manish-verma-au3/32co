@@ -10,6 +10,10 @@ exports.placeOrder = async (req, res) => {
       orderId: order.id 
     });
   } catch (err) {
+    // Handle transaction timeout specifically
+    if (err.message.includes('transaction') || err.message.includes('timeout')) {
+      return res.status(408).json({ error: `Transaction API error: ${err.message}` });
+    }
     // If stock is low, we return 400 Bad Request
     res.status(400).json({ error: err.message });
   }

@@ -16,7 +16,7 @@ class OrderRepository {
     });
   }
 
-  [cite_start]// Customer: View their own history [cite: 27]
+  // Customer: View their own history [cite: 27]
   async findByUserId(userId) {
     return await prisma.order.findMany({
       where: { userId },
@@ -25,7 +25,7 @@ class OrderRepository {
     });
   }
 
-  [cite_start]// Admin: View ALL orders [cite: 28]
+  // Admin: View ALL orders [cite: 28]
   async findAll() {
     return await prisma.order.findMany({
       include: { 

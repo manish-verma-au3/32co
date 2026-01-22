@@ -12,6 +12,14 @@ class ProductRepository {
     });
   }
 
+  // Update stock quantity (supports transaction client)
+  async updateStock(id, newQuantity, tx = prisma) {
+    return await tx.product.update({
+      where: { id: Number(id) },
+      data: { stockQuantity: newQuantity }
+    });
+  }
+
   async delete(id) {
     return await prisma.product.delete({
       where: { id: Number(id) },

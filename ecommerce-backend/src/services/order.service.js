@@ -6,12 +6,11 @@ const cartRepo = require('../repositories/cart.repo');
 class OrderService {
   async placeOrder(userId) {
     // START TRANSACTION (ACID Compliance)
+    // Increase timeout for Prisma 7 with adapters
     return await prisma.$transaction(async (tx) => {
       
-      // 1. Get Cart (Using the repo we made earlier)
-      // Note: We need to use 'tx' versions if we were locking, 
-      // but reading cart is safe here.
-      const cart = await prisma.cart.findUnique({
+      // 1. Get Cart - MUST use 'tx' inside transaction
+      const cart = await tx.cart.findUnique({
         where: { userId },
         include: { items: { include: { product: true } } }
       });
@@ -27,16 +26,16 @@ class OrderService {
       for (const item of cart.items) {
         const product = item.product;
 
-        [cite_start]// Check Stock [cite: 25]
+        // Check Stock
         if (product.stockQuantity < item.quantity) {
           throw new Error(`Insufficient stock for product: ${product.name}`);
         }
 
-        [cite_start]// Deduct Stock [cite: 25]
+        // Deduct Stock
         // CRITICAL: Must use 'tx' to rollback if anything fails later
         await productRepo.updateStock(product.id, product.stockQuantity - item.quantity, tx);
 
-        [cite_start]// Snapshot Price (Store price at time of purchase) [cite: 26]
+        // Snapshot Price (Store price at time of purchase) [cite: 26]
         const itemTotal = Number(product.price) * item.quantity;
         orderTotal += itemTotal;
 
@@ -47,17 +46,20 @@ class OrderService {
         });
       }
 
-      [cite_start]// 3. Create Order [cite: 26]
+      // 3. Create Order
       const order = await orderRepo.create({
         userId,
         totalPrice: orderTotal,
         items: orderItemsData
       }, tx);
 
-      // 4. Clear Cart (After successful order)
-      await cartRepo.clearCart(cart.id, tx); // You need to add clearCart to cart.repo.js
+      // 4. Clear Cart (After successful order) - MUST use 'tx'
+      await tx.cartItem.deleteMany({ where: { cartId: cart.id } });
 
       return order;
+    }, {
+      maxWait: 10000, // 10 seconds max wait to acquire transaction
+      timeout: 20000, // 20 seconds timeout for transaction
     });
   }
 

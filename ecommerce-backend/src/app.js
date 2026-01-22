@@ -17,12 +17,10 @@ app.use(cors());
 app.post('/api/auth/register', authController.register);
 app.post('/api/auth/login', authController.login);
 
-// --- Customer Routes ---
 // Customers can list and view product details
 app.get('/api/products', productController.getProducts);
 app.get('/api/products/:id', productController.getProductById);
 
-// --- Admin Routes ---
 // Admins can create, update, delete products
 app.post('/api/products', authenticate, authorizeAdmin, productController.createProduct);
 app.put('/api/products/:id', authenticate, authorizeAdmin, productController.updateProduct);
@@ -37,7 +35,7 @@ app.delete('/api/cart/:productId', authenticate, cartController.removeFromCart);
 app.post('/api/orders', authenticate, orderController.placeOrder);
 app.get('/api/orders', authenticate, orderController.getOrders);
 
-// Error handling middleware (should be after routes)
+// Error handling middleware
 app.use((err, req, res, next) => {
   console.error('Error:', err);
   res.status(500).json({ error: err.message || 'Internal server error' });
