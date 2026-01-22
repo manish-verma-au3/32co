@@ -62,8 +62,13 @@ cd ecommerce-backend
 npm install
 npm run start
 
+NOTE: before NPM run start make .env on root and save this value there
 
---------------------------------------
+---.env----
+DATABASE_URL="postgresql://neondb_owner:npg_5KZgQXkF8elc@ep-sweet-fog-ahbpc5i4-pooler.c-3.us-east-1.aws.neon.tech/neondb?sslmode=require&channel_binding=require"
+JWT_SECRET="h7J9kL2mN4pQ6rS8tU0vW2xY4zA6bC8dE0fG2hI4jK6"
+PORT=3000
+-----------
 # E-commerce Backend API Documentation
 
 **Base URL:** `http://localhost:3000/api`
